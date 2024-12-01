@@ -1,0 +1,21 @@
+services:
+  db:
+    image: mysql:8.4.3
+    container_name: book-jpa-hibernate-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${LOCAL_DEVDB_SUPER_PASSWORD}
+      MYSQL_DATABASE: jpa
+      LANG: C.UTF-8
+      TZ: Asia/Seoul
+    ports:
+      - "3306:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --lower_case_table_names=1
+      - --default-time-zone=Asia/Seoul
+    volumes:
+      - book-jpa-hibernate-data:/var/lib/mysql
+    restart: always
+volumes:
+  book-jpa-hibernate-data:
