@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.util.Streamable;
 import org.springframework.lang.NonNull;
 
 import java.time.LocalDate;
@@ -22,4 +23,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findFirst2ByLevel(int level, Sort sort);
     List<User> findByLevel(int level, Sort sort);
     List<User> findByActive(boolean active, Pageable pageable);
+
+    Streamable<User> findByEmailContaining(String email);
+    Streamable<User> findByLevel(int level);
 }

@@ -3,6 +3,7 @@ package book.jpa.jpa_hibernate.springdatajpa.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "USERS")
@@ -85,6 +86,21 @@ public class User {
                 "id=" + id +
                 ", username='" + username + '\'' +
                 ", registrationDate=" + registrationDate +
+                ", email='" + email + '\'' +
+                ", level=" + level +
+                ", active=" + active +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }
