@@ -27,4 +27,30 @@ public class Item {
 
     @Future
     private LocalDate auctionEnd;
+
+    protected Item() {}
+
+    public Item(
+        String name,
+        LocalDate auctionEnd
+    ) {
+        this.name = name;
+        this.auctionEnd = auctionEnd;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public LocalDate getAuctionEnd() {
+        return auctionEnd;
+    }
+
+    public void setAuctionEnd(LocalDate auctionEnd) {
+        this.auctionEnd = auctionEnd;
+    }
 }
