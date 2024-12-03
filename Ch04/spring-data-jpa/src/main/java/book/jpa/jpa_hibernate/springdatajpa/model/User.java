@@ -23,7 +23,7 @@ public class User {
 
     private boolean active;
 
-    protected User() {
+    public User() {
 
     }
 
