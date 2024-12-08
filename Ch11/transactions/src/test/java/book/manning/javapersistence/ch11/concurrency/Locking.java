@@ -5,7 +5,9 @@ import org.hibernate.Session;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -131,6 +133,30 @@ class Locking extends Versioning {
             em.getTransaction().commit();
             em.close();
             assertEquals(0, totalPrice.compareTo(new BigDecimal("108")));
+        }
+    }
+
+    @Test
+    void findLock() {
+        final ConcurrencyTestData testData = storeCategoriesAndItems();
+        Long CATEGORY_ID = testData.categories.getFirstId();
+
+        try (EntityManager em = emf.createEntityManager()) {
+            em.getTransaction().begin();
+
+            Map<String, Object> hints = new HashMap<>();
+            hints.put("jakarta.persistence.lock.timeout", 5000);
+
+            Category category =
+                    em.find(
+                            Category.class,
+                            CATEGORY_ID,
+                            LockModeType.PESSIMISTIC_WRITE,
+                            hints
+                    );
+
+            category.setName("New Name");
+            em.getTransaction().commit();
         }
     }
 }
