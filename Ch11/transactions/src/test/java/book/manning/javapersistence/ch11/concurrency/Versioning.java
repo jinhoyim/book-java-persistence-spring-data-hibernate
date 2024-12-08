@@ -24,7 +24,7 @@ class Versioning {
         emf = Persistence.createEntityManagerFactory("ch11", properties);
     }
 
-    private ConcurrencyTestData storeCategoriesAndItems() {
+    ConcurrencyTestData storeCategoriesAndItems() {
         ConcurrencyTestData testData = new ConcurrencyTestData();
         testData.categories = new TestData(new Long[3]);
         testData.items = new TestData(new Long[5]);
