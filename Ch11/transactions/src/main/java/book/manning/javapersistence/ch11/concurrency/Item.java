@@ -61,4 +61,15 @@ public class Item {
     public void setCategory(Category category) {
         this.category = category;
     }
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                "id=" + id +
+                ", version=" + version +
+                ", name='" + name + '\'' +
+                ", buyNowPrice=" + buyNowPrice +
+                ", category=" + category +
+                '}';
+    }
 }
