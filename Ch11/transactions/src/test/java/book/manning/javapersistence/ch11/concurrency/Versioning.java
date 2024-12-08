@@ -186,4 +186,80 @@ class Versioning {
             assertThat(totalPrice.toString()).isEqualTo("108.00");
         }
     }
+
+    @Test
+    void forceIncrement() throws ExecutionException, InterruptedException {
+        TestData testData = storeItemAndBids();
+        Long ITEM_ID = testData.getFirstId();
+
+        try (EntityManager em = emf.createEntityManager()) {
+            em.getTransaction().begin();
+
+            /*
+               The <code>find()</code> method accepts a <code>LockModeType</code>. The
+               <code>OPTIMISTIC_FORCE_INCREMENT</code> mode tells Hibernate that the version
+               of the retrieved <code>Item</code> should be incremented after loading,
+               even if it's never modified in the unit of work.
+               Item 버전이 작업 단위(커밋될 때)에서 수정되지 않더라도 로드 후 증가해야 한다고 알려준다.
+            */
+            Item item = em.find(Item.class, ITEM_ID, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
+            Bid highestBid = queryHighestBid(em, item);
+
+            // Now a concurrent transaction will place a bid for this item, and
+            // succeed because the first commit wins!
+            try (ExecutorService executorService = Executors.newSingleThreadExecutor()) {
+                executorService.submit(() -> {
+                    try (EntityManager em1 = emf.createEntityManager()) {
+                        em1.getTransaction().begin();
+
+                        Item item1 = em1.find(
+                                Item.class,
+                                testData.getFirstId(),
+                                LockModeType.OPTIMISTIC_FORCE_INCREMENT
+                        );
+                        Bid highestBid1 = queryHighestBid(em1, item1);
+
+                        Bid newBid = new Bid(
+                                new BigDecimal("44.44"),
+                                item1,
+                                highestBid1
+                        );
+                        em1.persist(newBid);
+
+                        em1.getTransaction().commit();
+                    } catch (Exception ex) {
+                        throw new RuntimeException("Concurrent operation failure: " + ex, ex);
+                    }
+                    return null;
+                }).get();
+            }
+
+            /*
+               The code persists a new <code>Bid</code> instance; this does not affect
+               any values of the <code>Item</code> instance. A new row will be inserted
+               into the <code>BID</code> table. Hibernate would not detect concurrently
+               made bids at all without a forced version increment of the
+               <code>Item</code>. We also use a checked exception to validate the
+               new bid amount; it must be greater than the currently highest bid.
+            */
+            Bid newBid = new Bid(
+                    new BigDecimal("45.45"),
+                    item,
+                    highestBid
+            );
+            em.persist(newBid);
+
+            /*
+                When flushing the persistence context, Hibernate will execute an
+                <code>INSERT</code> for the new <code>Bid</code> and force an
+                <code>UPDATE</code> of the <code>Item</code> with a version check.
+                If someone modified the <code>Item</code> concurrently, or placed a
+                <code>Bid</code> concurrently with this procedure, Hibernate throws
+                an exception.
+                입찰 처리 중 다른 트랜잭션에서 새로운 입찰이 등록되면서 Item 버전이 업데이트되어
+                처리중인 입찰은 버전 충돌로 등록에 실패한다.
+            */
+            assertThrows(RollbackException.class, () -> em.getTransaction().commit());
+        }
+    }
 }
