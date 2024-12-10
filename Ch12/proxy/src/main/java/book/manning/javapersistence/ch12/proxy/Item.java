@@ -3,7 +3,7 @@ package book.manning.javapersistence.ch12.proxy;
 import book.manning.javapersistence.ch12.Constants;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import org.hibernate.annotations.LazyCollectionOption;
+//import org.hibernate.annotations.LazyCollectionOption;
 
 import java.time.LocalDate;
 import java.util.HashSet;

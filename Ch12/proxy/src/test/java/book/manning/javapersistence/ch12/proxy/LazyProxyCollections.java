@@ -12,7 +12,9 @@ import org.junit.jupiter.api.function.Executable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -94,6 +96,45 @@ class LazyProxyCollections {
             testData.items = new TestData(itemIds);
             testData.users = new TestData(userIds);
             return testData;
+        }
+    }
+
+    @Test
+    void lazyCollections() {
+        FetchTestData testData = storeTestData();
+
+        try (EntityManager em = emf.createEntityManager()) {
+            em.getTransaction().begin();
+
+            Long ITEM_ID = testData.items.getFirstId();
+
+            {
+                Item item = em.find(Item.class, ITEM_ID);
+
+                Set<Bid> bids = item.getBids();
+                PersistenceUtil persistenceUtil = Persistence.getPersistenceUtil();
+                assertThat(persistenceUtil.isLoaded(item, "bids")).isFalse();
+
+                assertThat(bids.getClass()).isNotEqualTo(HashSet.class);
+                assertThat(bids.getClass()).isEqualTo(org.hibernate.collection.spi.PersistentSet.class);
+
+                Bid firstBid = bids.iterator().next();
+                // select * from BID where ITEM_ID = ?
+                // Alternative: Hibernate.initialize(bids)
+            }
+            em.clear();
+            {
+                Item item = em.find(Item.class, ITEM_ID);
+
+                // deprecated @org.hibernate.annotations.LazyCollection(LazyCollectionOption.EXTRA)
+                // assertThat(item.getBids().size()).isEqualTo(3);
+
+                assertThat(Hibernate.size(item.getBids())).isEqualTo(3);
+                // select count(id) from Bid where item_id=?
+
+                assertThat(Hibernate.isInitialized(item.getBids())).isFalse();
+            }
+            em.getTransaction().commit();
         }
     }
 
