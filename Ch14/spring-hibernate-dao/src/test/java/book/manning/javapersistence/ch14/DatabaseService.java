@@ -29,7 +29,7 @@ public class DatabaseService {
     }
 
     public void clear() {
-        sessionFactory.getCurrentSession().createQuery("delete from Bid b").executeUpdate();
-        sessionFactory.getCurrentSession().createQuery("delete from Item i").executeUpdate();
+        sessionFactory.getCurrentSession().createMutationQuery("delete from Bid b").executeUpdate();
+        sessionFactory.getCurrentSession().createMutationQuery("delete from Item i").executeUpdate();
     }
 }

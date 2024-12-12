@@ -25,7 +25,7 @@ public class ItemDaoImpl implements ItemDao {
 
     @Override
     public List<Item> getAll() {
-        return sessionFactory.getCurrentSession().createQuery("from Item", Item.class).list();
+        return sessionFactory.getCurrentSession().createSelectionQuery("from Item", Item.class).list();
     }
 
     @Override
@@ -45,15 +45,15 @@ public class ItemDaoImpl implements ItemDao {
 
     @Override
     public void delete(Item item) {
-        sessionFactory.getCurrentSession().createQuery("delete from Bid b where b.item.id=:id")
+        sessionFactory.getCurrentSession().createMutationQuery("delete from Bid b where b.item.id=:id")
                 .setParameter("id", item.getId()).executeUpdate();
-        sessionFactory.getCurrentSession().createQuery("delete from Item i where i.id=:id")
+        sessionFactory.getCurrentSession().createMutationQuery("delete from Item i where i.id=:id")
                 .setParameter("id", item.getId()).executeUpdate();
     }
 
     @Override
     public Item findByName(String name) {
-        return sessionFactory.getCurrentSession().createQuery("from Item where name=:name", Item.class)
+        return sessionFactory.getCurrentSession().createSelectionQuery("from Item where name=:name", Item.class)
                 .setParameter("name", name).uniqueResult();
     }
 }
