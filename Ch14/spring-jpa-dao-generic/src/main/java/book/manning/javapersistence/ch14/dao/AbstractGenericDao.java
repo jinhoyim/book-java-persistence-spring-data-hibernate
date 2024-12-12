@@ -3,6 +3,10 @@ package book.manning.javapersistence.ch14.dao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceContextType;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.CriteriaUpdate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,14 +48,21 @@ public abstract class AbstractGenericDao<T> implements GenericDao<T> {
 
     @Override
     public void update(long id, String propertyName, Object propertyValue) {
-        em.createQuery("UPDATE " + clazz.getName() + " e SET e." + propertyName + " = :propertyValue WHERE e.id = :id")
-                .setParameter("propertyValue", propertyValue)
-                .setParameter("id", id).executeUpdate();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaUpdate<T> update = cb.createCriteriaUpdate(clazz);
+        Root<T> root = update.from(clazz);
+        update.set(root.get(propertyName), propertyValue);
+        update.where(cb.equal(root.get("id"), id));
+        em.createQuery(update).executeUpdate();
     }
 
     @Override
     public List<T> findByProperty(String propertyName, Object propertyValue) {
-        return em.createQuery("SELECT e FROM " + clazz.getName() + " e WHERE e." + propertyName + " = :propertyValue", clazz)
-                .setParameter("propertyValue", propertyValue).getResultList();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<T> query = cb.createQuery(clazz);
+        Root<T> root = query.from(clazz);
+        query.select(root);
+        query.where(cb.equal(root.get(propertyName), propertyValue));
+        return em.createQuery(query).getResultList();
     }
 }
