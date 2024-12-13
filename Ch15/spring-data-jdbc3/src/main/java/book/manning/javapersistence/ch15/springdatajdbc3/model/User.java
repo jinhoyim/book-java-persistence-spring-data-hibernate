@@ -1,6 +1,7 @@
 package book.manning.javapersistence.ch15.springdatajdbc3.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDate;
@@ -21,6 +22,9 @@ public class User {
     private int level;
 
     private boolean active;
+
+    @MappedCollection(idColumn = "USER_ID")
+    private Address address;
 
     protected User() {}
 
@@ -63,6 +67,14 @@ public class User {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
     }
 
     @Override
